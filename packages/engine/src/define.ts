@@ -2,21 +2,53 @@ import {
   Table,
   SQL,
   getTableName,
-  eq, ne, gt, gte, lt, lte,
-  like, ilike, inArray, notInArray,
-  between, notBetween, isNull, isNotNull,
-  exists, notExists, and, or, not, sql
-} from 'drizzle-orm';
+  eq,
+  ne,
+  gt,
+  gte,
+  lt,
+  lte,
+  like,
+  ilike,
+  inArray,
+  notInArray,
+  between,
+  notBetween,
+  isNull,
+  isNotNull,
+  exists,
+  notExists,
+  and,
+  or,
+  not,
+  sql,
+} from "drizzle-orm";
 
 export const drizzleOperators = {
-  eq, ne, gt, gte, lt, lte,
-  like, ilike, inArray, notInArray,
-  between, notBetween, isNull, isNotNull,
-  exists, notExists, and, or, not, sql
+  eq,
+  ne,
+  gt,
+  gte,
+  lt,
+  lte,
+  like,
+  ilike,
+  inArray,
+  notInArray,
+  between,
+  notBetween,
+  isNull,
+  isNotNull,
+  exists,
+  notExists,
+  and,
+  or,
+  not,
+  sql,
 };
 
 // ** import types
-import type { EngineParams, EngineContext, CountMode } from './types/engine';
+import type { EngineParams, EngineContext, CountMode } from "./types/engine";
 import {
   TableConfig,
   ColumnConfig,
@@ -28,12 +60,12 @@ import {
   ColumnFormat,
   DatePreset,
   SubqueryCondition,
-} from './types/table';
+} from "./types/table";
 import {
   introspectTable,
   getSensitiveColumnNames,
   detectSensitiveColumns,
-} from './utils/introspect';
+} from "./utils/introspect";
 
 type InferColumns<T> = T extends { _: { columns: infer C } }
   ? keyof C & string
@@ -62,7 +94,7 @@ export interface RuntimeExtensions<T extends Table = Table> {
   dynamicWheres: ((
     ctx: { query: EngineParams; context: EngineContext },
     ops: typeof drizzleOperators,
-    table: T
+    table: T,
   ) => SQL | undefined | Promise<SQL | undefined>)[];
   rawJoins: SQL[];
   rawOrderBys: SQL[];
@@ -72,7 +104,11 @@ export interface RuntimeExtensions<T extends Table = Table> {
   countMode?: CountMode;
   hooks?: {
     beforeQuery?: (params: any, context: any) => any;
-    afterQuery?: (data: Record<string, unknown>[], params: any, context: any) => any;
+    afterQuery?: (
+      data: Record<string, unknown>[],
+      params: any,
+      context: any,
+    ) => any;
     onError?: (error: Error, params: any, context: any) => any;
   };
 }
@@ -114,14 +150,18 @@ export class TableDefinitionBuilder<T extends Table = Table> {
   }
 
   /** Set column alignment */
-  align(column: InferColumns<T>, alignment: 'left' | 'center' | 'right'): this {
+  align(column: InferColumns<T>, alignment: "left" | "center" | "right"): this {
     const col = this._config.columns.find((c) => c.name === column);
     if (col) (col as any).align = alignment;
     return this;
   }
 
   /** Set column width (px) */
-  width(column: InferColumns<T>, w: number, options?: { min?: number; max?: number }): this {
+  width(
+    column: InferColumns<T>,
+    w: number,
+    options?: { min?: number; max?: number },
+  ): this {
     const col = this._config.columns.find((c) => c.name === column);
     if (col) {
       (col as any).width = w;
@@ -145,7 +185,7 @@ export class TableDefinitionBuilder<T extends Table = Table> {
    */
   options(
     column: InferColumns<T>,
-    opts: { value: string | number | boolean; label: string; color?: string }[]
+    opts: { value: string | number | boolean; label: string; color?: string }[],
   ): this {
     const col = this._config.columns.find((c) => c.name === column);
     if (col) (col as any).options = opts;
@@ -159,10 +199,7 @@ export class TableDefinitionBuilder<T extends Table = Table> {
    * @example
    * .datePresets('createdAt', ['today', 'last7days', 'thisMonth', 'custom'])
    */
-  datePresets(
-    column: InferColumns<T>,
-    presets: DatePreset[]
-  ): this {
+  datePresets(column: InferColumns<T>, presets: DatePreset[]): this {
     const col = this._config.columns.find((c) => c.name === column);
     if (col) (col as any).datePresets = presets;
     return this;
@@ -240,13 +277,16 @@ export class TableDefinitionBuilder<T extends Table = Table> {
 
   search(...columns: InferColumns<T>[]): this {
     // Cast to unknown first to avoid tuple/array type mismatch in strict mode
-    this._config.search = { fields: columns as unknown as string[], enabled: true };
+    this._config.search = {
+      fields: columns as unknown as string[],
+      enabled: true,
+    };
     return this;
   }
 
   searchAll(): this {
     const textCols = this._config.columns
-      .filter((c) => c.type === 'string' && !c.hidden)
+      .filter((c) => c.type === "string" && !c.hidden)
       .map((c) => c.name);
     this._config.search = { fields: textCols, enabled: true };
     return this;
@@ -267,9 +307,18 @@ export class TableDefinitionBuilder<T extends Table = Table> {
     return this;
   }
 
-  staticFilter(field: InferColumns<T>, operator: Operator, value: unknown): this {
+  staticFilter(
+    field: InferColumns<T>,
+    operator: Operator,
+    value: unknown,
+  ): this {
     if (!this._config.filters) this._config.filters = [];
-    this._config.filters.push({ field: field as string, operator, value, type: 'static' });
+    this._config.filters.push({
+      field: field as string,
+      operator,
+      value,
+      type: "static",
+    });
     return this;
   }
 
@@ -288,10 +337,12 @@ export class TableDefinitionBuilder<T extends Table = Table> {
    * )
    * → WHERE ... AND (status = 'active' OR priority = 'high')
    */
-  whereOr(...conditions: { field: string; op: Operator; value: unknown }[]): this {
+  whereOr(
+    ...conditions: { field: string; op: Operator; value: unknown }[]
+  ): this {
     if (!this._config.filterGroups) this._config.filterGroups = [];
     this._config.filterGroups.push({
-      type: 'or',
+      type: "or",
       conditions: conditions.map((c) => ({
         field: c.field,
         operator: c.op,
@@ -312,7 +363,7 @@ export class TableDefinitionBuilder<T extends Table = Table> {
    *   ]},
    * ])
    */
-  whereGroup(type: 'and' | 'or', conditions: FilterExpression[]): this {
+  whereGroup(type: "and" | "or", conditions: FilterExpression[]): this {
     if (!this._config.filterGroups) this._config.filterGroups = [];
     this._config.filterGroups.push({ type, conditions });
     return this;
@@ -352,7 +403,11 @@ export class TableDefinitionBuilder<T extends Table = Table> {
   }
 
   noPagination(): this {
-    this._config.pagination = { defaultPageSize: 10, maxPageSize: 100, enabled: false };
+    this._config.pagination = {
+      defaultPageSize: 10,
+      maxPageSize: 100,
+      enabled: false,
+    };
     return this;
   }
 
@@ -362,10 +417,10 @@ export class TableDefinitionBuilder<T extends Table = Table> {
     table: Table,
     options?: {
       on?: string | SQL;
-      type?: 'left' | 'right' | 'inner' | 'full';
+      type?: "left" | "right" | "inner" | "full";
       alias?: string;
       columns?: string[];
-    }
+    },
   ): this {
     if (!this._config.joins) this._config.joins = [];
 
@@ -373,12 +428,12 @@ export class TableDefinitionBuilder<T extends Table = Table> {
     const baseName = this._config.base;
     const key = options?.alias ?? joinedName;
 
-    let onString = '';
+    let onString = "";
 
     if (options?.on) {
-      if (typeof options.on === 'string') {
+      if (typeof options.on === "string") {
         // Shorthand: "customerId" → "base.customerId = joined.id"
-        if (!options.on.includes('=') && !options.on.includes('.')) {
+        if (!options.on.includes("=") && !options.on.includes(".")) {
           onString = `${baseName}.${options.on} = ${joinedName}.id`;
         } else {
           onString = options.on;
@@ -396,13 +451,13 @@ export class TableDefinitionBuilder<T extends Table = Table> {
 
     const joinConfig: JoinConfig = {
       table: joinedName,
-      type: options?.type ?? 'left',
+      type: options?.type ?? "left",
       on: onString,
       ...(options?.alias && { alias: options.alias }),
       ...(options?.columns && {
         columns: options.columns.map((name) => ({
           name,
-          type: 'string' as const,
+          type: "string" as const,
           hidden: false,
           sortable: true,
           filterable: true,
@@ -416,10 +471,18 @@ export class TableDefinitionBuilder<T extends Table = Table> {
 
   // ──── Computed Columns ────
 
-  computed(name: string, expression: SQL, options?: { type?: ColumnConfig['type']; label?: string; sortable?: boolean }): this {
+  computed(
+    name: string,
+    expression: SQL,
+    options?: {
+      type?: ColumnConfig["type"];
+      label?: string;
+      sortable?: boolean;
+    },
+  ): this {
     this._config.columns.push({
       name,
-      type: options?.type ?? 'string',
+      type: options?.type ?? "string",
       label: options?.label ?? name,
       hidden: false,
       sortable: options?.sortable ?? true,
@@ -438,10 +501,10 @@ export class TableDefinitionBuilder<T extends Table = Table> {
       | ((
           ctx: { query: EngineParams; context: EngineContext },
           ops: typeof drizzleOperators,
-          table: T
-        ) => SQL | undefined | Promise<SQL | undefined>)
+          table: T,
+        ) => SQL | undefined | Promise<SQL | undefined>),
   ): this {
-    if (typeof condition === 'function') {
+    if (typeof condition === "function") {
       this._ext.dynamicWheres.push(condition);
       return this;
     }
@@ -493,8 +556,8 @@ export class TableDefinitionBuilder<T extends Table = Table> {
 
   aggregate(
     alias: string,
-    type: 'count' | 'sum' | 'avg' | 'min' | 'max',
-    field: InferColumns<T>
+    type: "count" | "sum" | "avg" | "min" | "max",
+    field: InferColumns<T>,
   ): this {
     if (!this._config.aggregations) this._config.aggregations = [];
     this._config.aggregations.push({ alias, type, field: field as string });
@@ -514,14 +577,14 @@ export class TableDefinitionBuilder<T extends Table = Table> {
       where?: { field: string; op: Operator; value: unknown }[];
       orderBy?: string[];
       // Nested includes would go here (recursive definition needed in types)
-    }
+    },
   ): this {
     if (!this._config.include) this._config.include = [];
 
     const includeConfig: IncludeConfig = {
       table: getTableName(table),
       foreignKey: options.foreignKey,
-      localKey: options.localKey ?? 'id',
+      localKey: options.localKey ?? "id",
       as: options.as,
       columns: options.columns,
       limit: options.limit,
@@ -549,9 +612,9 @@ export class TableDefinitionBuilder<T extends Table = Table> {
   }): this {
     this._config.recursive = {
       parentKey: options.parentKey,
-      childKey: options.childKey ?? 'id',
+      childKey: options.childKey ?? "id",
       maxDepth: options.maxDepth ?? 10,
-      depthAlias: options.depthAlias ?? 'depth',
+      depthAlias: options.depthAlias ?? "depth",
       pathAlias: options.pathAlias,
       startWith: options.startWith
         ? {
@@ -590,20 +653,24 @@ export class TableDefinitionBuilder<T extends Table = Table> {
   columnMeta(
     column: string,
     meta: {
-      type?: ColumnConfig['type'];
+      type?: ColumnConfig["type"];
       label?: string;
       format?: ColumnFormat;
-      align?: 'left' | 'center' | 'right';
+      align?: "left" | "center" | "right";
       width?: number;
       minWidth?: number;
       maxWidth?: number;
       sortable?: boolean;
       filterable?: boolean;
       hidden?: boolean;
-      options?: { value: string | number | boolean; label: string; color?: string }[];
+      options?: {
+        value: string | number | boolean;
+        label: string;
+        color?: string;
+      }[];
       datePresets?: DatePreset[];
       visibleTo?: string[];
-    }
+    },
   ): this {
     // Find in base columns first
     let col = this._config.columns.find((c) => c.name === column);
@@ -618,7 +685,7 @@ export class TableDefinitionBuilder<T extends Table = Table> {
       // haven't been registered yet. Create a placeholder.
       col = {
         name: column,
-        type: meta.type ?? 'string',
+        type: meta.type ?? "string",
         hidden: false,
         computed: true,
       };
@@ -637,14 +704,18 @@ export class TableDefinitionBuilder<T extends Table = Table> {
     if (meta.minWidth !== undefined) (col as any).minWidth = meta.minWidth;
     if (meta.maxWidth !== undefined) (col as any).maxWidth = meta.maxWidth;
     if (meta.options !== undefined) (col as any).options = meta.options;
-    if (meta.datePresets !== undefined) (col as any).datePresets = meta.datePresets;
+    if (meta.datePresets !== undefined)
+      (col as any).datePresets = meta.datePresets;
     if (meta.visibleTo !== undefined) (col as any).visibleTo = meta.visibleTo;
 
     return this;
   }
 
   /** Find a column inside the join tree by name */
-  private _findJoinColumn(joins: JoinConfig[], name: string): ColumnConfig | undefined {
+  private _findJoinColumn(
+    joins: JoinConfig[],
+    name: string,
+  ): ColumnConfig | undefined {
     for (const join of joins) {
       if (join.columns) {
         const col = join.columns.find((c: ColumnConfig) => c.name === name);
@@ -682,23 +753,27 @@ export class TableDefinitionBuilder<T extends Table = Table> {
     alias: string,
     sqlExpr: SQL,
     options?: {
-      type?: ColumnConfig['type'];
+      type?: ColumnConfig["type"];
       label?: string;
       format?: ColumnFormat;
-      align?: 'left' | 'center' | 'right';
+      align?: "left" | "center" | "right";
       sortable?: boolean;
       filterable?: boolean;
       hidden?: boolean;
       width?: number;
-      options?: { value: string | number | boolean; label: string; color?: string }[];
+      options?: {
+        value: string | number | boolean;
+        label: string;
+        color?: string;
+      }[];
       visibleTo?: string[];
-    }
+    },
   ): this {
     this._ext.rawSelects.set(alias, sqlExpr);
     // Register as a computed column with metadata
     this._config.columns.push({
       name: alias,
-      type: options?.type ?? 'string',
+      type: options?.type ?? "string",
       label: options?.label,
       hidden: options?.hidden ?? false,
       sortable: options?.sortable ?? true,
@@ -732,10 +807,13 @@ export class TableDefinitionBuilder<T extends Table = Table> {
    * Prefer `.sort()` or `.sortable()` for user-facing sort controls.
    */
   rawOrderBy(sqlExpr: SQL): this {
-    if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+    if (
+      typeof process !== "undefined" &&
+      process.env?.NODE_ENV !== "production"
+    ) {
       console.warn(
         `[TableCraft] rawOrderBy() bypasses the sortable whitelist and should not be used with user input. ` +
-        `Expression: ${sqlExpr}`
+          `Expression: ${sqlExpr}`,
       );
     }
     this._ext.rawOrderBys.push(sqlExpr);
@@ -816,26 +894,33 @@ export class TableDefinitionBuilder<T extends Table = Table> {
   subquery(
     alias: string,
     table: Table,
-    type: 'count' | 'exists' | 'first',
-    filter?: string | SubqueryCondition[] | SQL
+    type: "count" | "exists" | "first",
+    filter?: string | SubqueryCondition[] | SQL,
   ): this {
     if (!this._config.subqueries) this._config.subqueries = [];
 
-    let entry: NonNullable<TableConfig['subqueries']>[number];
+    let entry: NonNullable<TableConfig["subqueries"]>[number];
     if (filter === undefined || filter === null) {
       entry = { alias, table: getTableName(table), type };
     } else if (filter instanceof SQL) {
       // Drizzle SQL expression — stored as runtime-only filterSql (not JSON-serializable)
       entry = { alias, table: getTableName(table), type, filterSql: filter };
-    } else if (typeof filter === 'string') {
+    } else if (typeof filter === "string") {
       // @deprecated raw string — kept for backwards compatibility
       entry = { alias, table: getTableName(table), type, filter };
     } else {
-      entry = { alias, table: getTableName(table), type, filterConditions: filter };
+      entry = {
+        alias,
+        table: getTableName(table),
+        type,
+        filterConditions: filter,
+      };
     }
 
     // Dedupe subquery entries by alias — replace if exists
-    const existingIdx = this._config.subqueries.findIndex(e => e.alias === alias);
+    const existingIdx = this._config.subqueries.findIndex(
+      (e) => e.alias === alias,
+    );
     if (existingIdx >= 0) {
       this._config.subqueries[existingIdx] = entry;
     } else {
@@ -849,19 +934,21 @@ export class TableDefinitionBuilder<T extends Table = Table> {
     // 'first' mode returns row_to_json() — a non-scalar JSON object — which
     // cannot be used in ORDER BY. Mark it sortable: false to prevent DB errors.
     // 'count' (integer) and 'exists' (boolean) are scalar and safe to sort.
-    const existingCol = this._config.columns.find(c => c.name === alias);
+    const existingCol = this._config.columns.find((c) => c.name === alias);
     if (existingCol) {
-      existingCol.type = type === 'exists' ? 'boolean' : type === 'count' ? 'number' : 'json';
-      existingCol.sortable = type !== 'first';
+      existingCol.type =
+        type === "exists" ? "boolean" : type === "count" ? "number" : "json";
+      existingCol.sortable = type !== "first";
       existingCol.filterable = false;
       existingCol.computed = true;
     } else {
       this._config.columns.push({
         name: alias,
-        type: type === 'exists' ? 'boolean' : type === 'count' ? 'number' : 'json',
+        type:
+          type === "exists" ? "boolean" : type === "count" ? "number" : "json",
         label: alias,
         hidden: false,
-        sortable: type !== 'first',
+        sortable: type !== "first",
         filterable: false,
         computed: true,
       });
@@ -874,7 +961,7 @@ export class TableDefinitionBuilder<T extends Table = Table> {
 
   softDelete(field?: string): this {
     this._config.softDelete = {
-      field: field ?? this._config.softDelete?.field ?? 'deletedAt',
+      field: field ?? this._config.softDelete?.field ?? "deletedAt",
       enabled: true,
     };
     return this;
@@ -882,15 +969,15 @@ export class TableDefinitionBuilder<T extends Table = Table> {
 
   tenant(field?: string): this {
     this._config.tenant = {
-      field: field ?? this._config.tenant?.field ?? 'tenantId',
+      field: field ?? this._config.tenant?.field ?? "tenantId",
       enabled: true,
     };
     return this;
   }
 
-  exportable(...formats: ('csv' | 'json')[]): this {
+  exportable(...formats: ("csv" | "json")[]): this {
     this._config.export = {
-      formats: formats.length > 0 ? formats : ['csv', 'json'],
+      formats: formats.length > 0 ? formats : ["csv", "json"],
       enabled: true,
     };
     return this;
@@ -904,6 +991,11 @@ export class TableDefinitionBuilder<T extends Table = Table> {
   // ──── Name Override ────
 
   as(name: string): this {
+    this._config.name = name;
+    return this;
+  }
+
+  name(name: string): this {
     this._config.name = name;
     return this;
   }
@@ -939,7 +1031,9 @@ export class TableDefinitionBuilder<T extends Table = Table> {
   }
 
   /** Add a hook that runs after every query */
-  afterQuery(fn: (data: Record<string, unknown>[], params: any, context: any) => any): this {
+  afterQuery(
+    fn: (data: Record<string, unknown>[], params: any, context: any) => any,
+  ): this {
     this._ext.hooks = this._ext.hooks ?? {};
     this._ext.hooks.afterQuery = fn;
     return this;
@@ -963,9 +1057,9 @@ export class TableDefinitionBuilder<T extends Table = Table> {
 
 export function defineTable<T extends Table>(
   table: T,
-  options?: QuickOptions<T> | TableConfig
+  options?: QuickOptions<T> | TableConfig,
 ): TableDefinitionBuilder<T> {
-  if (options && 'columns' in options && Array.isArray(options.columns)) {
+  if (options && "columns" in options && Array.isArray(options.columns)) {
     return new TableDefinitionBuilder(table, options as TableConfig);
   }
 
@@ -982,7 +1076,7 @@ export function defineTable<T extends Table>(
 
 function applyQuickOptions<T extends Table>(
   config: TableConfig,
-  options: QuickOptions<T>
+  options: QuickOptions<T>,
 ): void {
   if (options.hide) {
     for (const name of options.hide) {
@@ -1003,7 +1097,10 @@ function applyQuickOptions<T extends Table>(
   }
 
   if (options.sort) {
-    const specs = options.sort.split(',').map((s) => s.trim()).filter(Boolean);
+    const specs = options.sort
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
     config.defaultSort = specs.map(parseSortSpec);
   }
 
@@ -1030,11 +1127,11 @@ function applyQuickOptions<T extends Table>(
 }
 
 function parseSortSpec(spec: string): SortConfig {
-  if (spec.startsWith('-')) {
-    return { field: String(spec.slice(1)), order: 'desc' };
+  if (spec.startsWith("-")) {
+    return { field: String(spec.slice(1)), order: "desc" };
   }
-  if (spec.startsWith('+')) {
-    return { field: String(spec.slice(1)), order: 'asc' };
+  if (spec.startsWith("+")) {
+    return { field: String(spec.slice(1)), order: "asc" };
   }
-  return { field: String(spec), order: 'asc' };
+  return { field: String(spec), order: "asc" };
 }

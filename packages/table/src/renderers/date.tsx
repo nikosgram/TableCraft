@@ -14,13 +14,19 @@ export function DateRenderer({ value, column }: CellRendererProps) {
 
   let formatted: string;
   if (format === "datetime") {
-    formatted = new Intl.DateTimeFormat(undefined, {
-      dateStyle: "medium",
-      timeStyle: "short",
+    formatted = new Intl.DateTimeFormat("en-US", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
     }).format(date);
   } else if (format === "time") {
-    formatted = new Intl.DateTimeFormat(undefined, {
-      timeStyle: "short",
+    formatted = new Intl.DateTimeFormat("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
     }).format(date);
   } else if (format === "relative") {
     const now = Date.now();

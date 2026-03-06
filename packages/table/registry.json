@@ -1,0 +1,242 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "tablecraft",
+  "homepage": "https://github.com/jacksonkasi1/TableCraft",
+  "items": [
+    {
+      "name": "data-table",
+      "type": "registry:block",
+      "title": "TableCraft DataTable",
+      "description": "Schema-driven, adapter-based data table for React. Built on TanStack Table v8 with search, sort, pagination, date-range filter, column resizing, drag-reorder, CSV/Excel export, and URL state sync. Supports TableCraft engine, REST, and static adapters.",
+      "author": "jacksonkasi1 <jacksonkasi11@gmail.com>",
+      "categories": ["table", "data-table", "tanstack"],
+      "dependencies": [
+        "@tablecraft/table",
+        "@dnd-kit/core",
+        "@dnd-kit/modifiers",
+        "@dnd-kit/sortable",
+        "@dnd-kit/utilities",
+        "@radix-ui/react-checkbox",
+        "@radix-ui/react-dropdown-menu",
+        "@radix-ui/react-popover",
+        "@radix-ui/react-separator",
+        "@radix-ui/react-slot",
+        "class-variance-authority",
+        "clsx",
+        "cmdk",
+        "date-fns",
+        "date-fns-tz",
+        "lucide-react",
+        "react-day-picker",
+        "sonner",
+        "tailwind-merge"
+      ],
+      "devDependencies": [],
+      "registryDependencies": [],
+      "docs": "Import DataTable from @tablecraft/table and add the styles:\n\n  import '@tablecraft/table/styles.css'\n\nFor Tailwind v4 projects, add the @source directive to your CSS:\n\n  @source '../../node_modules/@tablecraft/table/src';\n\nSee https://github.com/jacksonkasi1/TableCraft for full docs.",
+      "files": [
+        {
+          "path": "src/data-table.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/column-header.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/toolbar.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/pagination.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/view-options.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/export.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/resizer.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/expand-icon.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/types.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/styles.css",
+          "type": "registry:file",
+          "target": "~/src/tablecraft.css"
+        },
+        {
+          "path": "src/index.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/auto/tablecraft-adapter.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/auto/rest-adapter.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/auto/static-adapter.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/auto/auto-columns.tsx",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/auto/auto-filters.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/auto/use-auto-columns.ts",
+          "type": "registry:hook"
+        },
+        {
+          "path": "src/core/use-table-data.ts",
+          "type": "registry:hook"
+        },
+        {
+          "path": "src/core/use-url-state.ts",
+          "type": "registry:hook"
+        },
+        {
+          "path": "src/core/table-config.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/core/use-column-resize.ts",
+          "type": "registry:hook"
+        },
+        {
+          "path": "src/core/use-conditional-state.ts",
+          "type": "registry:hook"
+        },
+        {
+          "path": "src/renderers/index.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/renderers/badge.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/renderers/boolean.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/renderers/date.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/renderers/image.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/renderers/link.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/renderers/number.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/renderers/progress.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/renderers/tags.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/renderers/text.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/renderers/actions.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/utils/cn.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/utils/export-utils.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/utils/date-format.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/utils/deep-utils.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/utils/search.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/utils/keyboard-navigation.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/utils/column-sizing.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/utils/history-sync.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/utils/url-events.ts",
+          "type": "registry:lib"
+        },
+        {
+          "path": "src/components/button.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/calendar.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/calendar-date-picker.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/checkbox.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/command.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/popover.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/select.tsx",
+          "type": "registry:component"
+        },
+        {
+          "path": "src/components/table-dropdown.tsx",
+          "type": "registry:component"
+        }
+      ]
+    }
+  ]
+}
