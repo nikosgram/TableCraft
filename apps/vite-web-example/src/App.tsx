@@ -6,9 +6,11 @@ import { Orders2Page } from "@/pages/orders2-page";
 import { Orders3Page } from "@/pages/orders3-page";
 import { UsersPage } from "@/pages/users-page";
 import { DashboardPage } from "@/pages/dashboard-page";
+import { OrdersRestPage } from "@/pages/orders-rest-page";
+import { EmployeesStaticPage } from "@/pages/employees-static-page";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { Package, ShoppingCart, Users, LayoutDashboard, Github, Cable, Filter } from "lucide-react";
+import { Package, ShoppingCart, Users, LayoutDashboard, Github, Cable, Filter, Plug, Database } from "lucide-react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ModeToggle } from "@/components/mode-toggle";
 
@@ -22,6 +24,8 @@ function App() {
     { to: "/orders", label: "Orders", icon: ShoppingCart },
     { to: "/orders-advanced", label: "Orders (Filters)", icon: Filter },
     { to: "/orders-complex", label: "Orders (Complex)", icon: Filter },
+    { to: "/orders-rest", label: "Orders (REST)", icon: Plug },
+    { to: "/employees", label: "Employees (Static)", icon: Database },
     { to: "/users", label: "Users", icon: Users },
   ];
 
@@ -81,6 +85,8 @@ function App() {
             <Route path="/orders" element={<OrdersPage />} />
             <Route path="/orders-advanced" element={<Orders2Page />} />
             <Route path="/orders-complex" element={<Orders3Page />} />
+            <Route path="/orders-rest" element={<OrdersRestPage />} />
+            <Route path="/employees" element={<EmployeesStaticPage />} />
             <Route path="/users" element={<UsersPage />} />
           </Routes>
         </main>

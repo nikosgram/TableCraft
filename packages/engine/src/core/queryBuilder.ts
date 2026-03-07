@@ -118,8 +118,9 @@ export class QueryBuilder {
   ): any {
     if (!config.joins) return query;
 
+    query = query.$dynamic();
     for (const join of config.joins) {
-      this.applyJoin(query, join, sqlConditions);
+      query = this.applyJoin(query, join, sqlConditions);
     }
     return query;
   }
@@ -138,28 +139,29 @@ export class QueryBuilder {
     query: any,
     join: JoinConfig,
     sqlConditions?: Map<string, SQL>
-  ): void {
+  ): any {
     const joinedTable = this.schema[join.table] as Table;
     if (!joinedTable) {
       throw new Error(`Joined table '${join.table}' not found in schema`);
     }
 
-    // Use SQL object if available, otherwise fall back to raw string
     const key = join.alias ?? join.table;
     const onCondition = sqlConditions?.get(key) ?? sql.raw(join.on);
 
     switch (join.type) {
-      case 'left': query.leftJoin(joinedTable, onCondition); break;
-      case 'right': query.rightJoin(joinedTable, onCondition); break;
-      case 'inner': query.innerJoin(joinedTable, onCondition); break;
-      case 'full': query.fullJoin(joinedTable, onCondition); break;
+      case 'left':  query = query.leftJoin(joinedTable, onCondition); break;
+      case 'right': query = query.rightJoin(joinedTable, onCondition); break;
+      case 'inner': query = query.innerJoin(joinedTable, onCondition); break;
+      case 'full':  query = query.fullJoin(joinedTable, onCondition); break;
     }
 
     if (join.joins) {
       for (const nested of join.joins) {
-        this.applyJoin(query, nested, sqlConditions);
+        query = this.applyJoin(query, nested, sqlConditions);
       }
     }
+
+    return query;
   }
 
   buildBackendConditions(
