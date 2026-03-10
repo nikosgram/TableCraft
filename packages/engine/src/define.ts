@@ -67,7 +67,7 @@ import {
 	introspectTable,
 } from "./utils/introspect";
 
-export const TABLECRAFT_EXTENSIONS_KEY: unique symbol = Symbol("__tablecraft_ext");
+export const TABLECRAFT_EXTENSIONS_KEY: unique symbol = Symbol.for("__tablecraft_ext") as any;
 
 export type TableConfigWithExtensions<T extends Table = Table> = TableConfig & {
 	[TABLECRAFT_EXTENSIONS_KEY]?: RuntimeExtensions<T>;

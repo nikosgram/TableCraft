@@ -56,7 +56,8 @@ function resolveInput(input: ConfigInput): {
 
   if (typeof input === 'object' && '_config' in input && '_ext' in input) {
     const b = input as TableDefinitionBuilder<any>;
-    return { config: b.toConfig(), ext: b._ext as RuntimeExtensions<any> };
+    const cfg = b.toConfig();
+    return { config: cfg, ext: cfg[TABLECRAFT_EXTENSIONS_KEY] as RuntimeExtensions<any> };
   }
 
   const plainConfig = input as TableConfig & {
