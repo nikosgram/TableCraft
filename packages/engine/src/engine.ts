@@ -31,7 +31,12 @@ import { FieldSelector } from './core/fieldSelector';
 import { detectDialect, supportsFeature, Dialect } from './core/dialect';
 import { formatResponse, applyJsTransforms } from './utils/responseFormatter';
 import { exportData } from './utils/export';
-import { TableDefinitionBuilder, RuntimeExtensions, drizzleOperators } from './define';
+import {
+  TableDefinitionBuilder,
+  RuntimeExtensions,
+  TABLECRAFT_EXTENSIONS_KEY,
+  drizzleOperators,
+} from './define';
 import { TableCraftError, QueryError, DialectError } from './errors';
 import { applyRoleBasedVisibility } from './core/roleFilter';
 import { buildMetadata } from './core/metadataBuilder';
@@ -48,20 +53,29 @@ function resolveInput(input: ConfigInput): {
     const b = input as TableDefinitionBuilder<any>;
     return { config: b.toConfig(), ext: b._ext as RuntimeExtensions<any> };
   }
+
+  const plainConfig = input as TableConfig & {
+    [TABLECRAFT_EXTENSIONS_KEY]?: RuntimeExtensions<any>;
+  };
+
+  const embeddedExt = plainConfig?.[TABLECRAFT_EXTENSIONS_KEY];
+
   return {
-    config: input as TableConfig,
-    ext: {
-      computedExpressions: new Map(),
-      transforms: new Map(),
-      rawSelects: new Map(),
-      rawWheres: [],
-      dynamicWheres: [],
-      rawJoins: [],
-      rawOrderBys: [],
-      ctes: new Map(),
-      sqlJoinConditions: new Map(),
-      countMode: undefined,
-    },
+    config: plainConfig,
+    ext:
+      embeddedExt ??
+      {
+        computedExpressions: new Map(),
+        transforms: new Map(),
+        rawSelects: new Map(),
+        rawWheres: [],
+        dynamicWheres: [],
+        rawJoins: [],
+        rawOrderBys: [],
+        ctes: new Map(),
+        sqlJoinConditions: new Map(),
+        countMode: undefined,
+      },
   };
 }
 
