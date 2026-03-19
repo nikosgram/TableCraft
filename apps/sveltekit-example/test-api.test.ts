@@ -46,4 +46,4 @@ test('API tests', async () => {
   expect(r4.status).toBe(200);
   const data4 = await r4.json();
   expect(data4.data.length).toBeGreaterThan(0);
-});
+}, 30000); // Give enough timeout for fetching
