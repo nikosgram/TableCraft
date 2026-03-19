@@ -348,11 +348,15 @@ async function handleQueryRequest(
     const body = await engine.exportData(params, context);
     const { contentType, filename } = getExportMeta(tableName, params.export);
 
+    // RFC 5987 encoding for safe filenames in Content-Disposition
+    const safeAsciiFilename = filename.replace(/[^a-zA-Z0-9_.-]/g, '_');
+    const encodedFilename = encodeURIComponent(filename);
+
     return new Response(body, {
       status: 200,
       headers: {
         'Content-Type': contentType,
-        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Disposition': `attachment; filename="${safeAsciiFilename}"; filename*=UTF-8''${encodedFilename}`,
       },
     });
   }
@@ -468,6 +472,7 @@ export function createSvelteKitHandlers(
  * Extracts a single query handler for table operations.
  * Returns the `GET` handler from `createSvelteKitHandlers`.
  * Warning: Unless using `createSvelteKitHandlers`, this creates a separate engine instance.
+ * @deprecated Use `const { GET } = createSvelteKitHandlers(options)` instead.
  */
 export function createSvelteKitHandler(
   options: SvelteKitHandlerOptions
@@ -479,6 +484,7 @@ export function createSvelteKitHandler(
  * Extracts a single metadata handler.
  * Returns the `metaGET` handler from `createSvelteKitHandlers`.
  * Warning: Unless using `createSvelteKitHandlers`, this creates a separate engine instance.
+ * @deprecated Use `const { metaGET } = createSvelteKitHandlers(options)` instead.
  */
 export function createSvelteKitMetaHandler(
   options: SvelteKitHandlerOptions
@@ -490,6 +496,7 @@ export function createSvelteKitMetaHandler(
  * Extracts a single discovery handler.
  * Returns the `tablesGET` handler from `createSvelteKitHandlers`.
  * Warning: Unless using `createSvelteKitHandlers`, this creates a separate engine instance.
+ * @deprecated Use `const { tablesGET } = createSvelteKitHandlers(options)` instead.
  */
 export function createSvelteKitDiscoveryHandler(
   options: SvelteKitHandlerOptions
@@ -522,7 +529,7 @@ export function createSvelteKitHandle(
     try {
       rawTableParam = decodeURIComponent(rawTableParam);
     } catch {
-      // Ignore malformed URIs, let it fall through or 404
+      return json({ error: 'Malformed URI parameter: table' }, { status: 400 });
     }
 
     if (event.request.method !== 'GET') {

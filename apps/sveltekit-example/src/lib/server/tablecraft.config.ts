@@ -12,7 +12,7 @@ export const usersConfig = defineTable(schema.users)
     // Row-level security: enforce tenant isolation
     if (context.tenantId) {
       params.filters = params.filters || {};
-      params.filters['tenantId'] = { operator: 'eq', value: context.tenantId };
+      params.filters['tenant_id'] = { operator: 'eq', value: context.tenantId };
     }
     return params;
   });

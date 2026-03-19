@@ -13,7 +13,7 @@ export const tenants = pgTable('tenants', {
 // 2. Users (Belong to tenants)
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
-  tenantId: integer('tenant_id').references(() => tenants.id),
+  tenantId: integer('tenant_id').references(() => tenants.id).notNull(),
   email: text('email').notNull(),
   role: text('role').default('member'), // admin, member, viewer
   isActive: boolean('is_active').default(true),
@@ -23,7 +23,7 @@ export const users = pgTable('users', {
 // 3. Products (Catalog)
 export const products = pgTable('products', {
   id: serial('id').primaryKey(),
-  tenantId: integer('tenant_id').references(() => tenants.id),
+  tenantId: integer('tenant_id').references(() => tenants.id).notNull(),
   name: text('name').notNull(),
   description: text('description'),
   price: decimal('price', { precision: 10, scale: 2 }).notNull(),
@@ -36,8 +36,8 @@ export const products = pgTable('products', {
 // 4. Orders (Transactional)
 export const orders = pgTable('orders', {
   id: serial('id').primaryKey(),
-  tenantId: integer('tenant_id').references(() => tenants.id),
-  userId: integer('user_id').references(() => users.id),
+  tenantId: integer('tenant_id').references(() => tenants.id).notNull(),
+  userId: integer('user_id').references(() => users.id).notNull(),
   status: text('status').default('pending'), // pending, paid, shipped, cancelled
   total: decimal('total', { precision: 10, scale: 2 }).default('0'),
   createdAt: timestamp('created_at').defaultNow(),
@@ -47,8 +47,8 @@ export const orders = pgTable('orders', {
 // 5. Order Items (M:N relation details)
 export const orderItems = pgTable('order_items', {
   id: serial('id').primaryKey(),
-  orderId: integer('order_id').references(() => orders.id),
-  productId: integer('product_id').references(() => products.id),
+  orderId: integer('order_id').references(() => orders.id).notNull(),
+  productId: integer('product_id').references(() => products.id).notNull(),
   quantity: integer('quantity').default(1),
   unitPrice: decimal('unit_price', { precision: 10, scale: 2 }).notNull(),
 });

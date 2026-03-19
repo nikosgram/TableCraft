@@ -278,7 +278,7 @@ describe('@tablecraft/adapter-sveltekit', () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get('Content-Type')).toBe('text/csv');
-    expect(response.headers.get('Content-Disposition')).toBe(
+    expect(response.headers.get('Content-Disposition')).toContain(
       'attachment; filename="users.csv"'
     );
     await expect(response.text()).resolves.toBe('id\n1');
