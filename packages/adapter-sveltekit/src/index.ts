@@ -103,10 +103,21 @@ export interface SvelteKitRouteHandlers {
 
 const DEFAULT_PREFIX = '/api/data';
 
+/**
+ * Returns a standardized JSON response format
+ * @param data - The data to serialize
+ * @param init - Optional response initialization options
+ * @returns A generic Response object formatted as JSON
+ */
 function json(data: unknown, init?: ResponseInit): Response {
   return Response.json(data, init);
 }
 
+/**
+ * Normalizes error handling logic and returns standard JSON error responses.
+ * @param error - The caught error
+ * @returns A JSON response with a 500 status (or custom status for TableCraftError)
+ */
 function errorResponse(error: unknown): Response {
   if (error instanceof TableCraftError) {
     if (error.statusCode >= 500) {
@@ -115,11 +126,16 @@ function errorResponse(error: unknown): Response {
     return json({ error: error.message }, { status: error.statusCode });
   }
 
-  const message = error instanceof Error ? error.message : 'Internal server error';
   console.error('[tablecraft/sveltekit]', error);
-  return json({ error: message }, { status: 500 });
+  return json({ error: 'Internal server error' }, { status: 500 });
 }
 
+/**
+ * Resolves context for a given request using the configured getContext function.
+ * @param getContext - The context extractor function from options
+ * @param event - The current SvelteKit RequestEvent
+ * @returns The resolved EngineContext or an empty object
+ */
 async function resolveContext(
   getContext: SvelteKitHandlerOptions['getContext'] | SvelteKitRouteOptions['getContext'],
   event: RequestEvent
@@ -127,12 +143,23 @@ async function resolveContext(
   return getContext ? await getContext(event) : {};
 }
 
+/**
+ * Safely extracts the 'table' parameter from the SvelteKit request event.
+ * @param event - The current SvelteKit RequestEvent
+ * @returns The table parameter string or null if missing
+ */
 function getTableParam(event: RequestEvent): string | null {
   return typeof event.params.table === 'string' && event.params.table.length > 0
     ? event.params.table
     : null;
 }
 
+/**
+ * Normalizes a path prefix string to ensure it has a leading slash and no trailing slash.
+ * @param prefix - The raw prefix string
+ * @returns The normalized prefix string
+ * @throws Error if the prefix is empty or explicitly the root '/'
+ */
 function normalizePathPrefix(prefix: string): string {
   const trimmed = prefix.trim();
 
@@ -148,6 +175,14 @@ function normalizePathPrefix(prefix: string): string {
   return withLeadingSlash.replace(/\/+$/g, '');
 }
 
+/**
+ * Validates access to a table configuration using the configured checkAccess function or default logic.
+ * @param config - The TableConfig to evaluate
+ * @param context - The current EngineContext
+ * @param event - The SvelteKit RequestEvent
+ * @param checkAccess - Optional custom access checker function
+ * @returns A boolean resolving to true if access is granted
+ */
 async function hasTableAccess(
   config: TableConfig,
   context: EngineContext,
@@ -159,12 +194,20 @@ async function hasTableAccess(
     : defaultCheckAccess(config, context);
 }
 
+/**
+ * Strips the configured prefix from a pathname, returning the remaining segment.
+ * If running inside SvelteKit, attempts to strip the base path if configured.
+ * @param pathname - The full URL pathname
+ * @param prefix - The normalized prefix string
+ * @returns The remaining path segment (e.g., 'table/_meta') or null if it doesn't match the prefix
+ */
 function stripPrefix(pathname: string, prefix: string): string | null {
-  const normalizedPath = pathname.replace(/\/+$/g, '') || '/';
+  // Note: Since this is an adapter library, we cannot easily import $app/paths directly
+  // without complicating the build. SvelteKit passes the full URL including base to hooks,
+  // so developers using base paths may need to manually configure the prefix 
+  // (e.g. prefix: '/base/api/data').
 
-  if (prefix === '/') {
-    return normalizedPath.slice(1);
-  }
+  const normalizedPath = pathname.replace(/\/+$/g, '') || '/';
 
   if (normalizedPath === prefix) {
     return null;
@@ -177,11 +220,20 @@ function stripPrefix(pathname: string, prefix: string): string | null {
   return normalizedPath.slice(prefix.length + 1);
 }
 
+/**
+ * Represents the target operation resolved from the URL path.
+ */
 type RouteTarget =
   | { kind: 'discovery' }
   | { kind: 'meta'; tableName: string }
   | { kind: 'query'; tableName: string };
 
+/**
+ * Resolves a raw string table parameter into a structured route target format.
+ * Matches endpoints against discovery `_tables`, metadata `[table]/_meta`, and plain queries.
+ * @param rawTableParam - Raw string parameter extracted from the URL
+ * @returns The structured route target (discovery, meta, or query)
+ */
 function resolveRouteTarget(rawTableParam: string): RouteTarget {
   const normalized = rawTableParam.replace(/^\/+|\/+$/g, '');
 
@@ -199,6 +251,10 @@ function resolveRouteTarget(rawTableParam: string): RouteTarget {
   return { kind: 'query', tableName: normalized };
 }
 
+/**
+ * Internal route handler for `/meta` requests to return table configuration schema.
+ * Only returns schema if the user has correct permissions.
+ */
 async function handleMetadataRequest(
   engine: ReturnType<typeof createTableEngine>,
   event: RequestEvent,
@@ -214,6 +270,11 @@ async function handleMetadataRequest(
   return json(engine.getMetadata(context));
 }
 
+/**
+ * Internal route handler for the discovery `_tables` endpoint.
+ * Requires `enableDiscovery` to be set to true.
+ * Filters the list of available engines by user access permissions before returning them.
+ */
 async function handleDiscoveryRequest(
   engines: Record<string, ReturnType<typeof createTableEngine>>,
   event: RequestEvent,
@@ -227,7 +288,7 @@ async function handleDiscoveryRequest(
 
   if (options.checkAccess) {
     const hasDiscoveryAccess = await options.checkAccess(
-      { name: '_tables' } as TableConfig,
+      { name: '_tables', access: { roles: [] } } as unknown as TableConfig,
       context,
       event
     );
@@ -253,6 +314,10 @@ async function handleDiscoveryRequest(
   return json(tableNames.filter((tableName): tableName is string => tableName !== null));
 }
 
+/**
+ * Internal route handler for table queries.
+ * Validates access, handles data exports (csv/json), and returns paginated query payloads.
+ */
 async function handleQueryRequest(
   engine: ReturnType<typeof createTableEngine>,
   tableName: string,
@@ -267,7 +332,7 @@ async function handleQueryRequest(
     return json({ error: 'Forbidden' }, { status: 403 });
   }
 
-  const params = parseRequest(new URL(event.request.url).searchParams);
+  const params = parseRequest(event.url.searchParams);
 
   if (params.export) {
     const allowed = config.export?.formats ?? ['csv', 'json'];
@@ -293,15 +358,22 @@ async function handleQueryRequest(
   }
 
   const result = await engine.query(params, context);
+  const headers: Record<string, string> = {};
+  
+  if (result.meta.total !== null && result.meta.total !== undefined) {
+    headers['X-Total-Count'] = String(result.meta.total);
+  }
 
   return json(result, {
     status: 200,
-    headers: {
-      'X-Total-Count': String(result.meta.total),
-    },
+    headers,
   });
 }
 
+/**
+ * Central routing and dispatch function that directs incoming requests
+ * to either discovery, metadata, or query processors.
+ */
 async function dispatchRequest(
   engines: Record<string, ReturnType<typeof createTableEngine>>,
   rawTableParam: string | null,
@@ -395,6 +467,7 @@ export function createSvelteKitHandlers(
 /**
  * Extracts a single query handler for table operations.
  * Returns the `GET` handler from `createSvelteKitHandlers`.
+ * Warning: Unless using `createSvelteKitHandlers`, this creates a separate engine instance.
  */
 export function createSvelteKitHandler(
   options: SvelteKitHandlerOptions
@@ -405,6 +478,7 @@ export function createSvelteKitHandler(
 /**
  * Extracts a single metadata handler.
  * Returns the `metaGET` handler from `createSvelteKitHandlers`.
+ * Warning: Unless using `createSvelteKitHandlers`, this creates a separate engine instance.
  */
 export function createSvelteKitMetaHandler(
   options: SvelteKitHandlerOptions
@@ -415,6 +489,7 @@ export function createSvelteKitMetaHandler(
 /**
  * Extracts a single discovery handler.
  * Returns the `tablesGET` handler from `createSvelteKitHandlers`.
+ * Warning: Unless using `createSvelteKitHandlers`, this creates a separate engine instance.
  */
 export function createSvelteKitDiscoveryHandler(
   options: SvelteKitHandlerOptions
@@ -438,8 +513,7 @@ export function createSvelteKitHandle(
   const prefix = normalizePathPrefix(options.prefix ?? DEFAULT_PREFIX);
 
   return async ({ event, resolve }) => {
-    const pathname = new URL(event.request.url).pathname;
-    let rawTableParam = stripPrefix(pathname, prefix);
+    let rawTableParam = stripPrefix(event.url.pathname, prefix);
 
     if (rawTableParam === null) {
       return resolve(event);

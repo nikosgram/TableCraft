@@ -31,9 +31,11 @@ import {
   createSvelteKitRouteHandlers,
 } from '../src/index';
 
-function createEvent(url: string, params: Record<string, string> = {}) {
+function createEvent(urlStr: string, params: Record<string, string> = {}) {
+  const url = new URL(urlStr);
   return {
     request: new Request(url),
+    url,
     params,
     locals: {},
   } as any;
